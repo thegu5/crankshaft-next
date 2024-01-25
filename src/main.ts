@@ -47,7 +47,7 @@ if (existsSync(docsPath)) migrateSettings();
 
 const swapperPath = pathJoin(configPath, 'swapper');
 const settingsPath = pathJoin(configPath, 'settings.json');
-const userscriptPreferencesPath = pathJoin(configPath, '/userscriptsettings')
+const userscriptPreferencesPath = pathJoin(configPath, '/userscriptsettings');
 const filtersPath = pathJoin(configPath, 'filters.txt');
 const userscriptsPath = pathJoin(configPath, 'scripts');
 const userscriptTrackerPath = pathJoin(userscriptsPath, 'tracker.json');
@@ -135,7 +135,7 @@ ipcMain.on('logMainConsole', (event, data) => { console.log(data); });
 
 // send usercript path to preload
 ipcMain.on('initializeUserscripts', () => {
-	mainWindow.webContents.send('main_initializes_userscripts', { userscriptsPath: userscriptsPath, userscriptPrefsPath: userscriptPreferencesPath }, __dirname);
+	mainWindow.webContents.send('main_initializes_userscripts', { userscriptsPath, userscriptPrefsPath: userscriptPreferencesPath }, __dirname);
 });
 
 // initial request of settings to populate the settingsUI
@@ -315,17 +315,17 @@ app.on('ready', () => {
 			for (const item of conf) filter.urls.push(item);
 		}
 
-		/*
-		 * FIXME electron cannot have multiple onBeforeRequest handlers; use the adblocker commander uses: https://github.com/asger-finding/anotherkrunkerclient/blob/2857ac3e475ec2e45d83a9ef5d46a0a33b8c55dd/src/app.ts#L256
-		 * mainWindow.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
-		 * 	if (userPrefs.hideAds !== 'block' || filter.urls.length === 0) {
-		 * 		callback({ cancel: false });
-		 * 		return;
-		 * 	}
-		 * 	console.log(`Blocked ${details.url}`);
-		 * 	callback({ cancel: true });
-		 * });
-		 */
+
+		// FIXME electron cannot have multiple onBeforeRequest handlers; use the adblocker commander uses: https://github.com/asger-finding/anotherkrunkerclient/blob/2857ac3e475ec2e45d83a9ef5d46a0a33b8c55dd/src/app.ts#L256
+		mainWindow.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
+			if (userPrefs.hideAds !== 'block' || filter.urls.length === 0) {
+				callback({ cancel: false });
+				return;
+			}
+			console.log(`Blocked ${details.url}`);
+			callback({ cancel: true });
+		});
+
 
 		if (mainWindow.webContents.getURL().endsWith('dummy.html')) { mainWindow.loadURL('https://krunker.io'); return; }
 
