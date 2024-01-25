@@ -316,7 +316,8 @@ app.on('ready', () => {
 		}
 
 
-		// FIXME electron cannot have multiple onBeforeRequest handlers; use the adblocker commander uses: https://github.com/asger-finding/anotherkrunkerclient/blob/2857ac3e475ec2e45d83a9ef5d46a0a33b8c55dd/src/app.ts#L256
+		// FIXME electron can't have multiple onBeforeRequest handlers; use the adblocker commander uses
+		// https://github.com/asger-finding/anotherkrunkerclient/blob/2857ac3e475ec2e45d83a9ef5d46a0a33b8c55dd/src/app.ts#L256
 		mainWindow.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
 			if (userPrefs.hideAds !== 'block' || filter.urls.length === 0) {
 				callback({ cancel: false });

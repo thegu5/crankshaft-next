@@ -18,6 +18,13 @@
 		"changelog-a": "conventional-changelog -i CHANGELOG.md -s -r 1"
 	},
 	"author": "KraXen72",
+	"contributors": [
+		"asger-finding",
+		"AspectQuote",
+		"Mixaz017",
+		"paintingofblue",
+		"thegu5"
+	],
 	"license": "GPL-3.0",
 	"homepage": "https://github.com/KraXen72/crankshaft",
 	"keywords": [
@@ -28,20 +35,20 @@
 		"url": "https://github.com/KraXen72/crankshaft.git"
 	},
 	"devDependencies": {
-		"concurrently": "^8.2.0",
+		"concurrently": "^8.2.2",
 		"conventional-changelog-cli": "^3.0.0",
 		"electron": "10.4.7",
 		"electron-builder": "23.6.0",
 		"esbuild": "^0.18.20",
-		"eslint": "^8.47.0",
+		"eslint": "^8.56.0",
 		"eslint-config-airbnb-typescript": "^17.1.0",
 		"eslint-config-raven": "^1.0.3",
-		"eslint-plugin-import": "^2.28.0",
-		"typescript": "^5.1.6"
+		"eslint-plugin-import": "^2.29.1",
+		"typescript": "^5.3.3"
 	},
 	"dependencies": {
 		"compare-versions": "^6.1.0",
-		"dayjs": "^1.11.9",
+		"dayjs": "^1.11.10",
 		"discord-rpc": "^4.0.1",
 		"userscript-meta": "^1.0.1"
 	}
