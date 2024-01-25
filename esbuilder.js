@@ -33,7 +33,7 @@ const buildOptions = {
 	sourcemap: false,
 	format: 'cjs',
 	platform: 'node',
-	target: "es2020", // electron 10.4.7 => chromium 85 => released in 2020
+	target: "chrome120", // electron 10.4.7 => chromium 85 => released in 2020
 	banner: {
 		js: "\"use strict\";"
 	},

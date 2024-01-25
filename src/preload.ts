@@ -5,6 +5,7 @@ import { fetchGame } from './matchmaker';
 import { hasOwn, createElement, hiddenClassesImages, injectSettingsCSS, toggleSettingCSS, repoID } from './utils';
 import { renderSettings } from './settingsui';
 import { compareVersions } from 'compare-versions';
+console.log('ENTERED PRELOAD');
 
 // TODO if super border rewrite these to dynamic require's. For now i have not done it because i don't want to dynamically require in exported function
 import dayjs from 'dayjs';
@@ -15,6 +16,8 @@ dayjs.extend(utc);
 
 // get rid of client unsupported message 
 window.OffCliV = true;
+
+// document.body.innerHTML = '';
 
 // save some console methods from krunker
 export const strippedConsole = {
@@ -105,8 +108,9 @@ ipcRenderer.on('initDiscordRPC', () => {
 });
 
 ipcRenderer.on('matchmakerRedirect', (_event, _userPrefs: UserPrefs) => fetchGame(_userPrefs));
-
+console.log('about to add injectcss event');
 ipcRenderer.on('injectClientCSS', (_event, _userPrefs: UserPrefs, version: string) => {
+	strippedConsole.log('got event');
 	// eslint-disable-next-line
 	const { matchmaker, matchmaker_F6 } = _userPrefs;
 
@@ -206,7 +210,7 @@ export function getTimezoneByRegionKey(key: 'code' | 'id', value: string) {
 
 function patchSettings(_userPrefs: UserPrefs) {
 	// hooking & binding credit: https://github.com/asger-finding/anotherkrunkerclient/blob/main/src/preload/game-settings.ts
-	let interval: number | NodeJS.Timer = null;
+	let interval: string | number | NodeJS.Timeout = null;
 	strippedConsole.log('waiting to hook settings...');
 
 	function hookSettings() {

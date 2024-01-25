@@ -170,7 +170,6 @@ function customGenericWin(url: string, providedMenuTemplate: (MenuItemConstructo
 		center: true,
 		webPreferences: {
 			spellcheck: false,
-			enableRemoteModule: false,
 			nodeIntegration: false
 		} satisfies Electron.WebPreferences
 	});
@@ -212,6 +211,7 @@ function customGenericWin(url: string, providedMenuTemplate: (MenuItemConstructo
 	// if hideAds is enabled, hide them. then show the window
 	genericWin.once('ready-to-show', () => {
 		if (userPrefs.hideAds === 'hide' || userPrefs.hideAds === 'block') genericWin.webContents.insertCSS(hideAdsCSS);
+		console.log('css injected...?');
 		genericWin.show();
 	});
 	if (userPrefs.hideAds === 'hide' || userPrefs.hideAds === 'block') {
@@ -239,10 +239,11 @@ if (userPrefs.resourceSwapper) {
 
 // Listen for app to get ready
 app.on('ready', () => {
+	console.log('ready event called!!');
 	app.setAppUserModelId(process.execPath);
 
 	if (userPrefs.resourceSwapper) protocol.registerFileProtocol('krunker-resource-swapper', (request, callback) => callback(decodeURI(request.url.replace(/krunker-resource-swapper:/u, ''))));
-
+	console.log(`preload is ${pathJoin(__dirname, 'preload.js')}`);
 	const mainWindowProps: BrowserWindowConstructorOptions = {
 		show: false,
 		width: 1600,
@@ -250,9 +251,11 @@ app.on('ready', () => {
 		center: true,
 		webPreferences: {
 			preload: pathJoin(__dirname, 'preload.js'),
-			enableRemoteModule: false,
 			spellcheck: false,
-			nodeIntegration: false
+			nodeIntegration: false,
+
+			// FIXME: THIS IS A BAD IDEA, ONLY FOR TESTING!!
+			sandbox: false
 		},
 		backgroundColor: '#000000'
 	};
@@ -316,8 +319,10 @@ app.on('ready', () => {
 		}
 
 
-		// FIXME electron can't have multiple onBeforeRequest handlers; use the adblocker commander uses
-		// https://github.com/asger-finding/anotherkrunkerclient/blob/2857ac3e475ec2e45d83a9ef5d46a0a33b8c55dd/src/app.ts#L256
+		/*
+		 * FIXME electron can't have multiple onBeforeRequest handlers; use the adblocker commander uses
+		 * https://github.com/asger-finding/anotherkrunkerclient/blob/2857ac3e475ec2e45d83a9ef5d46a0a33b8c55dd/src/app.ts#L256
+		 */
 		mainWindow.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
 			if (userPrefs.hideAds !== 'block' || filter.urls.length === 0) {
 				callback({ cancel: false });
@@ -331,7 +336,7 @@ app.on('ready', () => {
 		if (mainWindow.webContents.getURL().endsWith('dummy.html')) { mainWindow.loadURL('https://krunker.io'); return; }
 
 		mainWindow.webContents.send('injectClientCSS', userPrefs, app.getVersion()); // tell preload to inject settingcss and splashcss + other
-
+		console.log('sent event to main process');
 		if (userPrefs.discordRPC) {
 			// eslint-disable-next-line
 			const DiscordRPC = require('discord-rpc');
@@ -423,7 +428,8 @@ app.on('ready', () => {
 	mainWindow.setAutoHideMenuBar(true);
 	mainWindow.setMenuBarVisibility(false);
 
-	mainWindow.webContents.on('new-window', (event, url) => {
+	mainWindow.webContents.setWindowOpenHandler(details => {
+		const { url } = details;
 		console.log('url trying to open:', url, 'socialWindowReference:', typeof socialWindowReference);
 		const freeSpinHostnames = ['youtube.com', 'twitch.tv', 'twitter.com', 'reddit.com', 'discord.com', 'accounts.google.com', 'instagram.com', 'github.com'];
 
@@ -442,22 +448,17 @@ app.on('ready', () => {
 			});
 			switch (pick) {
 				case 0: // open in default browser
-					event.preventDefault();
 					shell.openExternal(url);
-					break;
+					return { action: 'deny' };
 				case 2: // load as main window
-					event.preventDefault();
 					mainWindow.loadURL(url);
-					break;
+					return { action: 'deny' };
 				case 3: // don't open
-					event.preventDefault();
-					break;
+					return { action: 'deny' };
 				case 1: // open as a new window in client
 				default: {
-					event.preventDefault();
 					const genericWin = customGenericWin(url, strippedMenuTemplate);
-					event.newGuest = genericWin;
-					break;
+					return { action: 'deny' };
 				}
 			}
 
@@ -467,13 +468,11 @@ app.on('ready', () => {
 			|| url.startsWith('https://krunker.io/?play')
 			|| (url.includes('?game=') && url.includes('&matchId='))
 		) {
-			event.preventDefault();
 			mainWindow.loadURL(url);
+			return { action: 'deny' };
 		} else { // for any other link, fall back to creating a custom window with strippedMenu. 
-			event.preventDefault();
 			console.log(`genericWindow created for ${url}`, socialWindowReference);
 			const genericWin = customGenericWin(url, strippedMenuTemplate);
-			event.newGuest = genericWin;
 
 			// if the window is social, create and assign a new socialWindow
 			if (url.includes('https://krunker.io/social.html')) {
@@ -490,6 +489,7 @@ app.on('ready', () => {
 					}
 				});
 			}
+			return { action: 'deny' };
 		}
 	});
 

@@ -62,6 +62,7 @@ export function createElement(type: string, options: Object = {}) {
 export function toggleSettingCSS(css: string, identifier: string, value: ('toggle' | boolean) = 'toggle') {
 	function inject() {
 		insertedCSS[identifier] = webFrame.insertCSS(css);
+		console.log(`inserted ${identifier}`);
 	}
 
 	function uninject() {

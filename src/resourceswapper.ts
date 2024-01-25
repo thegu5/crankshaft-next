@@ -40,7 +40,7 @@ export default class {
 
 		if (this.urls.length) {
 			this.browserWindow.webContents.session.webRequest.onBeforeRequest({ urls: this.urls }, (details, callback) => {
-				const path = new URL(details.url).pathname;
+				const path = new URL(url).pathname;
 				const resultPath = path.startsWith('/assets/') ? pathJoin(this.swapDir, path.substring(7)) : pathJoin(this.swapDir, path);
 
 				// Redirect to the local resource.
